@@ -36,6 +36,7 @@ Triangles = 2(5) - 2 - 3 = 5 triangles
 - test transformer vers binaire triangle pour 1 ou plusierus triangles
 - test transformer vers/depuis binaire pour un/ plusieurs points 
 - test pour des valeurs trop grandes 
+- test 1 triangle rend 3 points (on peut faire pour plusieurs point mais ça sera compliqué) vers/depuis binaire  
 
 
 ### integration
