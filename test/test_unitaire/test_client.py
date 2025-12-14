@@ -1,6 +1,9 @@
 import pytest
 from unittest.mock import Mock,patch
+from triangulator.serialization import serialize_pointset
+from triangulator.client import PointSetManagerClient
 from requests import HTTPError, Timeout, ConnectionError
+
 
 @patch('triangulator.client.requests.get')
 def test_get_pointset_success_simple(mock_get):
@@ -48,7 +51,7 @@ def test_get_pointset_network_unreachable(mock_get):
 def test_get_pointset_unexpected_status_code(mock_get):
     """Test avec un code de statut inattendu (non 200, mais pas d'exception)."""
     mock_response = Mock()
-    mock_response.status_code = 202  # Accepted (rare pour un GET de retourner 202)
+    mock_response.status_code = 202  # Accepted (rare pour un GET)
     mock_get.return_value = mock_response
     
     client = PointSetManagerClient("http://localhost:5000")

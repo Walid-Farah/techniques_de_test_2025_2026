@@ -3,12 +3,14 @@ import struct
 # import unittest
 from unittest.mock import Mock, patch
 from triangulator.app import app
+# from triangulator.serialization import serialize_pointset
 from requests import HTTPError
+
 
 
 @pytest.fixture
 def client():
-    """Creation d'un client test."""
+    """Create test client."""
     app.config['TESTING'] = False
     app.config["PROPAGATE_EXCEPTIONS"] = False
     with app.test_client() as client:
@@ -46,8 +48,6 @@ def test_api_triangulate_empty_id(client):
 
 def test_api_triangulate_pointset_not_found(client):
     """Test avec un Pointset qui n'existe pas."""
-    from requests import HTTPError
-    from unittest.mock import Mock
     
     with patch('triangulator.app.pointset_client.get_pointset') as mock_get:
         mock_response = Mock()

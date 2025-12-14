@@ -1,5 +1,7 @@
 import struct
 import pytest
+from triangulator.serialization import serialize_triangles, deserialize_triangles, serialize_pointset, deserialize_pointset
+from triangulator.algorithm import triangulate
 from triangulator.geometry import duplication_point,sont_colineaires, point_in_circumcircle
 
 
@@ -52,8 +54,8 @@ def test_pointset_deserialization_valid():
 
 
 def test_pointset_deserialization_invalid_length_too_short():
-    """Test deserialization pas complet génére une erreur"""
-    binary = struct.pack('<I', 2) + struct.pack('<ff', 1.0, 2.0)
+    """Test deserialization pas complet genere une erreur"""
+    binary = struct.pack('<I', 2) + struct.pack('<ff', 1.0, 2.0)  # Missing second point
     
     with pytest.raises(ValueError, match="Invalid data length"):
         deserialize_pointset(binary)
@@ -105,9 +107,9 @@ def test_pointset_large_dataset():
     assert len(restored) == 1000
 
 
-# serialisation triangle
+# triangulation serialize
 def test_triangles_serialization_empty():
-    """Test serialization avec 0 trinagles"""
+    """Test serialization with no triangles."""
     vertices = [(0.0, 0.0), (1.0, 0.0), (0.5, 1.0)]
     triangles = []
     
@@ -116,13 +118,13 @@ def test_triangles_serialization_empty():
     # 4 (vertex count) + 3*8 (vertices) + 4 (triangle count)
     assert len(binary) == 4 + 3 * 8 + 4
     
-    # verifier qu'il y a 0 triangle
+    # Check triangle count is 0
     triangle_count_offset = 4 + 3 * 8
     assert struct.unpack('<I', binary[triangle_count_offset:triangle_count_offset + 4])[0] == 0
 
 
 def test_triangles_serialization_single_triangle():
-    """Test serialization avec 1 trinagles"""
+    """Test serialization with single triangle."""
     vertices = [(0.0, 0.0), (1.0, 0.0), (0.5, 1.0)]
     triangles = [(0, 1, 2)]
     
@@ -134,7 +136,7 @@ def test_triangles_serialization_single_triangle():
 
 
 def test_triangles_serialization_multiple_triangles():
-    """Test serialization avec 2 triangles."""
+    """Test serialization with multiple triangles."""
     vertices = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
     triangles = [(0, 1, 2), (0, 2, 3)]
     
@@ -158,20 +160,21 @@ def test_triangles_deserialization_valid():
 
 
 def test_triangles_deserialization_invalid_indices():
-    """Test deserialization avec des indices qui depasse."""
-    binary = struct.pack('<I', 3)  
+    """Test deserialization with out-of-bounds indices."""
+    # Manually create invalid data
+    binary = struct.pack('<I', 3)  # 3 vertices
     binary += struct.pack('<ff', 0.0, 0.0)
     binary += struct.pack('<ff', 1.0, 0.0)
     binary += struct.pack('<ff', 0.5, 1.0)
-    binary += struct.pack('<I', 1)  
-    binary += struct.pack('<III', 0, 1, 5) 
+    binary += struct.pack('<I', 1)  # 1 triangle
+    binary += struct.pack('<III', 0, 1, 5)  # Index 5 is out of bounds!
     
     with pytest.raises(ValueError, match="out of bounds"):
         deserialize_triangles(binary)
 
 
 def test_triangles_roundtrip():
-    """Test serialisation puis deserialisation."""
+    """Test serialisation oui deserialisation."""
     vertices = [(1.0, 2.0), (3.0, 4.0), (5.0, 6.0), (7.0, 8.0)]
     triangles = [(0, 1, 2), (1, 2, 3)]
     
@@ -196,23 +199,23 @@ def test_triangles_deserialization_too_short():
 def test_triangles_duplicate_indices():
     """Test triangle with duplicate indices."""
     vertices = [(0.0, 0.0), (1.0, 0.0), (0.5, 1.0)]
-    triangles = [(0, 0, 0)] 
+    triangles = [(0, 0, 0)]  # Degenerate triangle
     
     binary = serialize_triangles(vertices, triangles)
     restored_vertices, restored_triangles = deserialize_triangles(binary)
     
+    # Should deserialize successfully (validation is algorithm's job)
     assert restored_triangles[0] == (0, 0, 0)
 
 
 def test_triangles_structure_validation():
-    """Test structure est correcte"""
+    """Test that structure is correctly validated."""
     vertices = [(0.0, 0.0), (1.0, 0.0), (0.5, 1.0)]
     triangles = [(0, 1, 2)]
     
     binary = serialize_triangles(vertices, triangles)
     
-    #check structure triangle 
-
+    # Manually check structure
     num_vertices = struct.unpack('<I', binary[:4])[0]
     assert num_vertices == 3
     

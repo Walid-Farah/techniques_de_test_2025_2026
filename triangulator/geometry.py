@@ -1,10 +1,15 @@
 import math
-from typing import Tuple
+from typing import Tuple,List
 from triangulator.models import Point
 
 
 
-def sont_colineaires(points):
+def sont_colineaires(points:List[Point]):
+    """
+    Cette fonction détermine si les points sont collinéaires et renvoie True dans ce cas
+    
+    :param points: prends en parametre une liste de Point
+    """
     if len(points) < 3:
         return True  
 
@@ -18,7 +23,12 @@ def sont_colineaires(points):
     return True
 
 
-def duplication_point(points):
+def duplication_point(points:List[Point]):
+    """
+    Cette fonction permet de déterminer si des points sont dupliqués et retourne True dans ce cas.
+    
+    :param points: prends en parametre une liste de Point
+    """
     unique_points = set(points)
     if len(unique_points) < len(points):
         return True
@@ -27,12 +37,24 @@ def duplication_point(points):
     
 
 def distance(p1: Point, p2: Point) -> float:
+    """
+    Cette fonction permet de calculer la distance entre 2 points.
+    
+    :param p1,p2: prend en paramétre 2 points 
+    :rtype: retourne float (nombre réel)
+    """
     dx = p2[0] - p1[0]
     dy = p2[1] - p1[1]
     return math.sqrt(dx * dx + dy * dy)
 
 
 def circumcircle(p1: Point, p2: Point, p3: Point) -> Tuple[Point, float]:
+    """
+    Calcule le cercle circonscrit d'un triangle (le cercle qui passe par les trois sommets du triangle).
+    
+    :param p1,p2,p3: prend en paramétre 3 points qui sont les sommets du triangles 
+    :return: retourne le centre et le rayon du cercle 
+    """
     ax, ay = p1
     bx, by = p2
     cx, cy = p3
@@ -54,16 +76,26 @@ def circumcircle(p1: Point, p2: Point, p3: Point) -> Tuple[Point, float]:
           (bx * bx + by * by) * (ax - cx) + 
           (cx * cx + cy * cy) * (bx - ax)) / d
     
-    center = (ux, uy)
-    radius = distance(center, p1)
+    centre = (ux, uy)
+    rayon = distance(centre, p1)
     
-    return center, radius
+    return centre, rayon
 
 
 def point_in_circumcircle(point: Point, p1: Point, p2: Point, p3: Point) -> bool:
+    """
+    Cette fonction permet de  déterminer si un point se trouve dans le cercle circonscrit d'un triangle.
+    
+    :param point: Le point à tester pour savoir s'il se trouve dans le cercle ou non
+    :param p1,p2,p3: Prend en paramétre 3 points qui sont les sommets du triangles
+    :return: retourne True si le point est dans le cercle et False si le point est a l'exterieur du cercle 
+
+    Remarque si les points sont collinéaire dans ce cas la fonction retourne False
+    """
     try:
-        center, radius = circumcircle(p1, p2, p3)
-        return distance(point, center) < radius - 1e-10
+        centre, rayon = circumcircle(p1, p2, p3)
+        print(centre, rayon)
+        return distance(point, centre) < rayon - 1e-10
     except ValueError:
         return False
 
@@ -71,6 +103,6 @@ def point_in_circumcircle(point: Point, p1: Point, p2: Point, p3: Point) -> bool
 
 
 
-# points=[(1,2), (3,6), (5,10), (7,14)]
-# print(point_in_circumcircle(points[0],points[1],points[2],points[3]))
+points=[(0.5,0.5), (2,0), (0,2), (-2,0)]
+print(point_in_circumcircle(points[0],points[1],points[2],points[3]))
 # print(circumcircle(points[1],points[2],points[3]))
