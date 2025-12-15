@@ -55,7 +55,7 @@ def test_pointset_deserialization_valid():
 
 def test_pointset_deserialization_invalid_length_too_short():
     """Test deserialization pas complet genere une erreur"""
-    binary = struct.pack('<I', 2) + struct.pack('<ff', 1.0, 2.0)  # Missing second point
+    binary = struct.pack('<I', 2) + struct.pack('<ff', 1.0, 2.0) 
     
     with pytest.raises(ValueError, match="Invalid data length"):
         deserialize_pointset(binary)
@@ -161,13 +161,12 @@ def test_triangles_deserialization_valid():
 
 def test_triangles_deserialization_invalid_indices():
     """Test deserialization with out-of-bounds indices."""
-    # Manually create invalid data
-    binary = struct.pack('<I', 3)  # 3 vertices
+    binary = struct.pack('<I', 3)  
     binary += struct.pack('<ff', 0.0, 0.0)
     binary += struct.pack('<ff', 1.0, 0.0)
     binary += struct.pack('<ff', 0.5, 1.0)
-    binary += struct.pack('<I', 1)  # 1 triangle
-    binary += struct.pack('<III', 0, 1, 5)  # Index 5 is out of bounds!
+    binary += struct.pack('<I', 1)  
+    binary += struct.pack('<III', 0, 1, 5)  # Index 5 n'existe pas
     
     with pytest.raises(ValueError, match="out of bounds"):
         deserialize_triangles(binary)
@@ -199,12 +198,11 @@ def test_triangles_deserialization_too_short():
 def test_triangles_duplicate_indices():
     """Test triangle with duplicate indices."""
     vertices = [(0.0, 0.0), (1.0, 0.0), (0.5, 1.0)]
-    triangles = [(0, 0, 0)]  # Degenerate triangle
+    triangles = [(0, 0, 0)] 
     
     binary = serialize_triangles(vertices, triangles)
     restored_vertices, restored_triangles = deserialize_triangles(binary)
     
-    # Should deserialize successfully (validation is algorithm's job)
     assert restored_triangles[0] == (0, 0, 0)
 
 
@@ -215,7 +213,6 @@ def test_triangles_structure_validation():
     
     binary = serialize_triangles(vertices, triangles)
     
-    # Manually check structure
     num_vertices = struct.unpack('<I', binary[:4])[0]
     assert num_vertices == 3
     
